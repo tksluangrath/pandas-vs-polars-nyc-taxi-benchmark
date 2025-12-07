@@ -177,6 +177,6 @@ If you use or extend this project, feel free to connect:
 
 Author: Terrance Luangrath
 
-GitHub: https://github.com/terranceluangrath
+GitHub: https://github.com/tksluangrath
 
 LinkedIn: https://www.linkedin.com/in/terrance-luangrath/
