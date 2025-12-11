@@ -1,182 +1,233 @@
-🚀 Overview
+# Pandas vs Polars: NYC Taxi Data Performance Benchmark
 
-This project evaluates Pandas and Polars, two major Python DataFrame libraries, by applying them to real-world NYC Yellow Taxi trip data.
+## 🚀 Overview
 
-We compare both libraries across:
+This project provides a comprehensive performance comparison between **Pandas** and **Polars**, two leading Python DataFrame libraries, using real-world NYC Yellow Taxi trip data.
 
-- CSV loading performance
-- Data cleaning workflows
-- Quality checks (QC)
-- Feature engineering
-- Aggregations
-- Memory usage
-- Visualization outputs
+### What We Compare
 
-The goal is to provide a clear, practical demonstration of how these libraries behave under identical workloads—and offer guidance on when to use each.
+- **CSV Loading Performance** – How quickly each library ingests data
+- **Data Cleaning Workflows** – Transformation and filtering operations
+- **Quality Checks (QC)** – Data validation and integrity checks
+- **Feature Engineering** – Creating derived columns and metrics
+- **Aggregations** – Grouping and statistical computations
+- **Memory Usage** – RAM consumption patterns
+- **Visualization Outputs** – End-to-end analytical results
 
-📦 Dataset
+The goal is to provide clear, practical insights into how these libraries perform under identical workloads and offer guidance on when to use each.
 
-NYC 2023 Yellow Taxi Trip Records
-API Source: https://data.cityofnewyork.us/resource/4b4i-vvec.csv
+---
 
-A sample of 50,000 rows is fetched directly using the NYC Open Data API.
+## 📦 Dataset
 
-The dataset includes:
+**NYC 2023 Yellow Taxi Trip Records**
 
-- Pickup/dropoff timestamps
-- Trip distance
-- Fares and taxes
+- **Source**: [NYC Open Data API](https://data.cityofnewyork.us/resource/4b4i-vvec.csv)
+- **Sample Size**: 50,000 rows
+- **Access Method**: Direct API fetch via SODA API
+
+### Dataset Features
+
+The dataset includes the following attributes:
+
+- Pickup and dropoff timestamps
+- Trip distance (miles)
+- Fare amounts and taxes
 - Passenger counts
-- Location IDs
+- Pickup/dropoff location IDs
+- Payment types and tip amounts
 
+---
 
-📚 Dependencies
+## 📚 Dependencies
 
-Install everything via:
+### Installation
+
+Install all required packages using:
 
 ```bash
 pip install -r requirements.txt
 ```
 
+### Key Packages
 
-Key packages:
+- **pandas** – Traditional DataFrame library
+- **polars** – High-performance DataFrame library
+- **matplotlib** – Data visualization
+- **requests** – HTTP requests
+- **python-dotenv** – Environment variable management
+- **sodapy** – NYC Open Data API client
 
-- `pandas`
-- `polars`
-- `matplotlib`
-- `requests`
-- `python-dotenv`
-- `sodapy`
+---
 
-⚙️ Methods
-1️⃣ Data Loading
+## ⚙️ Methodology
 
-CSV fetched once from the API → parsed using:
+### 1️⃣ Data Loading
+
+CSV data is fetched once from the NYC Open Data API and parsed using:
 
 ```python
-pd.read_csv(...)
-pl.read_csv(...)
+# Pandas
+df_pandas = pd.read_csv(...)
+
+# Polars
+df_polars = pl.read_csv(...)
 ```
 
-Polars loads ~15× faster thanks to multithreaded Rust-based parsing.
+**Result**: Polars loads data ~15× faster due to multithreaded, Rust-based parsing.
 
-2️⃣ Data Cleaning
+---
 
-Applied identical transformations in both libraries:
+### 2️⃣ Data Cleaning
 
-parse datetime columns
+Identical transformations applied in both libraries:
 
-cast numeric values
+- Parse datetime columns (`tpep_pickup_datetime`, `tpep_dropoff_datetime`)
+- Cast numeric values to appropriate types
+- Filter invalid records:
+  - `trip_distance ≤ 0`
+  - `fare_amount < 0`
 
-filter invalid rows (`trip_distance ≤ 0`, `fare_amount < 0`)
+**Result**: Both libraries produced identical cleaned datasets with **48,572 rows × 19 columns**.
 
-Both libraries produced the same cleaned dataset shape:
-48,572 rows × 19 columns
+---
 
-3️⃣ Quality Checks
+### 3️⃣ Quality Checks
 
-Verified dataset integrity:
+Data integrity verification:
 
-- Missing values → none
-- Outliers → exactly 1 long trip (distance ~105 miles)
-- No negative fares or totals
+- ✅ **Missing values**: None detected
+- ✅ **Outliers**: 1 long-distance trip (~105 miles) identified
+- ✅ **Negative values**: No negative fares or totals
 
-Both libraries flagged the same row, confirming correctness.
+**Result**: Both libraries flagged the same anomalies, confirming analytical correctness.
 
-4️⃣ Feature Engineering
+---
 
-Added new computed fields:
+### 4️⃣ Feature Engineering
 
-- `trip_duration_minutes`
-- `average_speed_mph`
-- `pickup_hour`
+Created derived features:
 
-Then aggregated by hour:
+- `trip_duration_minutes` – Time between pickup and dropoff
+- `average_speed_mph` – Distance divided by duration
+- `pickup_hour` – Hour of day extracted from pickup timestamp
 
-- number of trips
-- average distance
-- average speed
+Aggregated by hour:
 
-Pandas and Polars produced identical aggregated results.
+- Total number of trips
+- Average trip distance
+- Average speed
 
-5️⃣ Visualization
+**Result**: Pandas and Polars produced identical aggregated results.
 
-Used Matplotlib to create:
+---
 
-trips per hour
+### 5️⃣ Visualization
 
-average distance per hour
+Generated visualizations using Matplotlib:
 
-average speed per hour
+- Trips per hour (bar chart)
+- Average distance per hour (line chart)
+- Average speed per hour (line chart)
 
-The Pandas and Polars lines overlap perfectly, confirming equal outputs.
+**Result**: Pandas and Polars outputs overlap perfectly, confirming equal analytical outcomes.
 
-6️⃣ Benchmarking
+---
 
-Measured average execution times over 100 runs for:
+### 6️⃣ Performance Benchmarking
 
-- CSV loading
-- Cleaning
-- QC
-- Feature engineering + aggregation
+Average execution times measured over **100 runs** for each operation:
 
-| Task                              | Library | Avg Time (sec) |
-| --------------------------------- | ------- | -------------- |
-| CSV Load                          | Pandas  | 0.0463         |
-| CSV Load                          | Polars  | 0.0032         |
-| Cleaning                          | Pandas  | 0.0004         |
-| Cleaning                          | Polars  | 0.0133         |
-| Quality Check                     | Pandas  | 0.0003         |
-| Quality Check                     | Polars  | 0.0018         |
-| Feature Engineering + Aggregation | Pandas  | 0.0030         |
-| Feature Engineering + Aggregation | Polars  | 0.0034         |
+| Task                              | Library | Avg Time (sec) | Speedup    |
+| --------------------------------- | ------- | -------------- | ---------- |
+| CSV Load                          | Pandas  | 0.0463         | —          |
+| CSV Load                          | Polars  | 0.0032         | **14.5×**  |
+| Cleaning                          | Pandas  | 0.0004         | —          |
+| Cleaning                          | Polars  | 0.0133         | 0.03×      |
+| Quality Check                     | Pandas  | 0.0003         | —          |
+| Quality Check                     | Polars  | 0.0018         | 0.17×      |
+| Feature Engineering + Aggregation | Pandas  | 0.0030         | —          |
+| Feature Engineering + Aggregation | Polars  | 0.0034         | 0.88×      |
 
-7️⃣ Memory Usage
+**Key Takeaways**:
+- Polars excels at I/O-bound operations (CSV loading)
+- Pandas is faster for small-scale in-memory transformations
+- Performance differences narrow for compute-bound operations at this scale
 
-| Library | Memory Usage (MB) |
-| ------- | ----------------- |
-| Pandas  | 9.2508            |
-| Polars  | 8.3447            |
+---
 
+### 7️⃣ Memory Usage
 
-Polars used ~10% less memory, aligning with expectations for Arrow-backed columnar storage.
+| Library | Memory Usage (MB) | Efficiency |
+| ------- | ----------------- | ---------- |
+| Pandas  | 9.2508            | —          |
+| Polars  | 8.3447            | **~10% less** |
 
-📊 Results
+**Result**: Polars demonstrates superior memory efficiency due to Apache Arrow's columnar storage format.
 
-- Polars is dramatically faster at reading CSV files.
-- Pandas is faster for small-scale cleaning and QC tasks.
-- Both libraries produce identical analytical results.
-- Polars is more memory efficient due to Arrow-native columnar storage.
-- For mid-sized workloads (~50k rows), performance differences shrink.
-- For larger datasets, Polars’ advantages would grow significantly.
+---
 
-🧠 Conclusion
+## 📊 Results Summary
 
-Both Pandas and Polars are excellent tools—neither is “better,” but each excels in different contexts.
+### Performance Insights
 
-Choose Pandas if:
+✅ **Polars** is dramatically faster at reading CSV files (15× speedup)  
+✅ **Pandas** is faster for small-scale cleaning and QC tasks on this dataset size  
+✅ Both libraries produce **identical analytical results**  
+✅ **Polars** is ~10% more memory efficient  
+✅ For mid-sized workloads (~50K rows), performance differences are minimal  
+✅ For larger datasets (millions of rows), Polars' advantages would compound significantly
 
-- You want familiar syntax and ecosystem compatibility
-- Your dataset fits comfortably in memory
-- You prioritize ease of use
+---
 
-Choose Polars if:
+## 🧠 Conclusion
 
-- You need maximum performance
-- Your dataset is large (millions+ rows)
-- You want lower memory usage
-- You prefer expressive, Rust-inspired APIs
+Both Pandas and Polars are excellent tools—neither is universally "better," but each excels in different contexts.
 
-Final Thought
+### Choose Pandas if:
 
-Pandas is great for productivity. Polars is great for performance. Knowing when to use each is a superpower for data scientists.
+- ✅ You want familiar, mature syntax
+- ✅ You need broad ecosystem compatibility
+- ✅ Your dataset comfortably fits in memory
+- ✅ You prioritize ease of use and rapid prototyping
+- ✅ You're working with legacy codebases
 
-📬 Contact
+### Choose Polars if:
 
-If you use or extend this project, feel free to connect:
+- ✅ You need maximum performance at scale
+- ✅ Your dataset has millions+ rows
+- ✅ You want lower memory usage
+- ✅ You prefer expressive, functional APIs
+- ✅ You're building production data pipelines
 
-Author: Terrance Luangrath
+### Final Thought
 
-GitHub: https://github.com/tksluangrath
+> **Pandas is great for productivity. Polars is great for performance.**  
+> Knowing when to use each is a superpower for data scientists.
 
-LinkedIn: https://www.linkedin.com/in/terrance-luangrath/
+---
+
+## 📈 Future Enhancements
+
+Potential extensions to this project:
+
+- [ ] Scale testing to millions of rows
+- [ ] Add Dask and DuckDB comparisons
+- [ ] Include write performance benchmarks
+- [ ] Test join operations
+- [ ] Evaluate GPU acceleration (cuDF)
+- [ ] Add streaming data processing scenarios
+
+---
+
+## 📬 Contact
+
+**Author**: Terrance Luangrath
+
+**📧 Email:** [tksluangrath@gmail.com](mailto:tksluangrath@gmail.com)  
+**💼 LinkedIn:** [![LinkedIn](https://img.shields.io/badge/LinkedIn-%230077B5.svg?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/terranceluangrath/)  
+**👨‍💻 GitHub:** [![GitHub](https://img.shields.io/badge/GitHub-181717.svg?logo=github&logoColor=white)](https://github.com/tksluangrath)
+
+---
+
+**⭐ If you find this project helpful, please consider giving it a star on GitHub!**
